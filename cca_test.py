@@ -44,7 +44,7 @@ df_location['Label'] = df_location['Label'].astype('string').str.strip()
 df_location['Electrode'] = df_location['Electrode'].astype('int')
 
 ## channel selection
-list_el = [str('Pz'), str('PO5'), str('PO3'), str('POz'), str('PO4'), str('PO6'), str('O1'), str('Oz'),
+list_el = [str('PO5'), str('PO3'), str('POz'), str('PO4'), str('PO6'), str('O1'), str('Oz'),
            str('O2')]  # Electrodes to use
 vec_ind_el = df_location[df_location['Label'].isin(list_el)].index  # Vector with indexes of electrodes to use
 ind_ref_el = df_location['Electrode'][df_location['Label'] == 'Cz'].index[0]  # Index of reference electrode 'Cz'
@@ -125,8 +125,8 @@ for iS in range(0,1):
 
     # pre-processing
     subject.apply_baseline((None, 0))   # include 140 ms visual delay
-    subject = subject.pick(list_el)     # pick only electrodes in visual area
     subject.set_eeg_reference(['Cz'])     # set common reference
+    subject = subject.pick(list_el)     # pick only electrodes in visual area
     subject.crop(0.140, 0.140+5, include_tmax=False)
     subject.filter(l_freq=7, h_freq=70, method='fir', phase='zero-double', verbose=False)
     # subject.drop_bad(dict(eeg=40))     # drop bads based on threshold

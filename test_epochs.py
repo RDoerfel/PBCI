@@ -11,6 +11,7 @@ import mne
 from functions import *
 from scipy.io import loadmat
 
+
 ### Functions
 def loadData(fpath, fname):
     """load all files of the same data and safe them in one list
@@ -69,7 +70,7 @@ df_location['Label'] = df_location['Label'].astype('string').str.strip()
 df_location['Electrode'] = df_location['Electrode'].astype('int')
 
 ## channel selection
-list_el = [str('PZ'), str('PO5'), str('PO3'), str('POz'), str('PO4'), str('PO6'), str('O1'), str('Oz'),
+list_el = [str('Pz'), str('PO5'), str('PO3'), str('POz'), str('PO4'), str('PO6'), str('O1'), str('Oz'),
            str('O2')]  # Electrodes to use
 vec_ind_el = df_location[df_location['Label'].isin(list_el)].index  # Vector with indexes of electrodes to use
 ind_ref_el = df_location['Electrode'][df_location['Label'] == 'Cz'].index[0]  # Index of reference electrode 'Cz'
@@ -83,11 +84,11 @@ N_start = N_pre + N_delay - 1
 N_stop = N_start + N_stim
 
 vec_t = np.arange(-0.5, 5.5, 1 / fs)  # time vector
-Nh = 5              # Number of harmonics
+Nh = 5  # Number of harmonics
 Nf = len(vec_freq)  # Number of frequencies
-Nb = 6              # Number of Blocks
-Ne = 64             # number of electrodes
-Nt = 1500           # number of samples
+Nb = 6  # Number of Blocks
+Ne = 64  # number of electrodes
+Nt = 1500  # number of samples
 Ns = len(list_subject_data)
 
 ## create mne objects
@@ -122,13 +123,34 @@ events = events.astype(int)
 lEpochs = []
 for i in range(Ns):
     data = list_subject_data[i]
-    data = data.swapaxes(2, 3)
-    data = data.reshape([Ne, Nt, Nb * Nf])
-    data = data.swapaxes(1, 2)
-    data = data.swapaxes(0, 1)
-    lEpochs.append(mne.EpochsArray(data, info, events, tmin=-0.5, verbose=False))
-    lEpochs[i].set_montage(mne_montage)
+    data_2 = np.zeros([Nb * Nf, Ne, Nt])
+    for b in range(Nb):
+        for f in range(Nf):
+            data_2[b * Nf + f, :, :] = data[:, :, f, b]
 
-subject = lEpochs[0]
-for epoch in subject:
-    data = epoch.get_data()
+    lEpochs.append(mne.EpochsArray(data_2, info, events, tmin=-0.5, verbose=False))
+    lEpochs[i].set_montage(mne_montage)
+    lEpochs[i].apply_baseline((None, 0))   # include 140 ms visual delay
+    lEpochs[i].set_eeg_reference(['Cz'])     # set common reference
+    lEpochs[i] = lEpochs[i].pick(list_el)  # pick only electrodes in visual area
+    lEpochs[i].crop(0.140, 0.140+2, include_tmax=False)
+    lEpochs[i] = lEpochs[i].filter(l_freq=7, h_freq=70, method='fir', phase='zero-double', verbose=False)
+
+for s in range(0, Ns):
+    for b in range(0, Nb):
+        for f in range(0, Nf):
+            # Referencing and baseline correction
+            mat_data = preprocess(list_subject_data[s][:, :, f, b], vec_ind_el, ind_ref_el, N_start, N_stop)
+
+            # Filter data
+            mat_filt = mne.filter.filter_data(mat_data, fs, 7, 70, method='fir', phase='zero-double', verbose=False)
+
+subject = lEpochs[i].crop(0.140, 5 + 0.140, include_tmax=False)
+a = subject[239].get_data()
+a = np.squeeze(a)
+plt.figure()
+plt.subplot(2, 1, 1)
+plt.plot(subject.times, a.T)
+plt.subplot(2, 1, 2)
+t = subject.times
+plt.plot(t, mat_data.T)

@@ -123,7 +123,7 @@ for s in range(0, Ns):
                 mat_filter[n] = mne.filter.filter_data(mat_data, fs, l_freq=f_low + n * bw, h_freq=f_high, method='fir',
                                                        l_trans_bandwidth=2, h_trans_bandwidth=2,
                                                        phase='zero-double', verbose=False)
-                mat_filter_train[n] = mne.filter.filter_data(mat_data, fs, l_freq=f_low + n * bw, h_freq=f_high, method='fir',
+                mat_filter_train[n] = mne.filter.filter_data(mat_X_train[f], fs, l_freq=f_low + n * bw, h_freq=f_high, method='fir',
                                                              l_trans_bandwidth=2, h_trans_bandwidth=2,
                                                              phase='zero-double', verbose=False)
 

@@ -20,7 +20,6 @@ from datetime import datetime
 import pandas as pd
 import mne
 import sys
-import tikzplotlib
 
 ### Functions
 def loadData(fpath, fname):
@@ -202,6 +201,7 @@ def apply_ext_fbcca(X, Y, X_Train):
         :n_comp,
         n_comp:])
 
+    # eq 8, Chen 2015,PNAS
     rho = np.sign(rho_1) * rho_1 ** 2 + np.sign(rho_2) * rho_2 ** 2 + np.sign(rho_3) * rho_3 ** 2 + np.sign(
         rho_4) * rho_4 ** 2 + np.sign(rho_5) * rho_5 ** 2
 

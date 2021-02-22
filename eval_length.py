@@ -49,9 +49,8 @@ vec_length = np.arange(0.25, 5.25, 0.25)
 
 lDf = []
 lDfS = []
-lLength = [0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5, 3.0, 3.25, 4.0, 4.25, 5.0]
 
-for l in lLength:
+for l in vec_length:
     sSec = '_' + str(l)
     fname_ext_fbcca = 'ext_fbcca_mat_result' + sSec + sNs + '_ref' + '.npy'
     fname_ext_cca = 'ext_cca_mat_result' + sSec + sNs + sTag + '.npy'

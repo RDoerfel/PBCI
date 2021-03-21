@@ -415,17 +415,15 @@ def setPgf(bDoPgf):
             'text.usetex': True,
             'pgf.rcfonts': False,
             "axes.labelsize": 8,  # LaTeX default is 10pt font.
-            "legend.fontsize": 8,  # Make the legend/label fonts a little smaller
-            "xtick.labelsize": 8,
-            "ytick.labelsize": 8,
-            "xtick.labelsize": 8,
-            "ytick.labelsize": 8,
+            "legend.fontsize": 6,  # Make the legend/label fonts a little smaller
+            "xtick.labelsize": 6,
+            "ytick.labelsize": 6,
             "pgf.preamble": r"\usepackage[utf8x]{inputenc} \usepackage[T1]{fontenc} \usepackage{cmbright}"
         })
 
 
 def figsize(scale):
-    fig_width_pt = 345./2                          # Get this from LaTeX using \the\textwidth
+    fig_width_pt = 345.                          # Get this from LaTeX using \the\textwidth
     inches_per_pt = 1.0/72.27                       # Convert pt to inch
     golden_mean = (np.sqrt(5.0)-1.0)/2.0            # Aesthetic ratio (you could change this)
     fig_width = fig_width_pt*inches_per_pt*scale    # width in inches

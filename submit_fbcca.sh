@@ -23,11 +23,12 @@ echo "subjects = $subjects, length = $length, tag = $tag"
 ### -- set the job Name --
 #BSUB -J fbcca
 ### -- ask for number of cores (default: 1) --
-#BSUB -n 1
+#BSUB -n 12
+#BSUB -R "span[hosts=1]"
 ### -- Select the resources: 1 gpu in exclusive process mode --
 #BSUB -gpu "num=1:mode=exclusive_process"
 ### -- set walltime limit: hh:mm --  maximum 24 hours for GPU-queues right now
-#BSUB -W 02:00
+#BSUB -W 01:00
 ### -- request 10GB of memory
 #BSUB -R "rusage[mem=10GB]"
 ### -- set the email address --

@@ -1,5 +1,6 @@
 from functions import *
 import argparse
+from joblib import Parallel, delayed
 
 ### Parser
 parser = argparse.ArgumentParser(description='Add some integers.')
@@ -99,8 +100,8 @@ for s in range(0, Ns):
             vec_rho = np.zeros(Nf)
 
             # Apply CCA
-            for k in range(0, Nf):
-                vec_rho[k] = apply_cca(standardize(mat_filt), mat_Y[k, :, :])
+            vec_rho = Parallel(n_jobs=-1)(delayed(apply_cca)(mat_filt, mat_Y[k, :, :]) for k in range(0, Nf))
+            # vec_rho[k] = apply_cca(standardize(mat_filt), mat_Y[k, :, :])
 
             t_trial_end = datetime.now()
             mat_time[f, b] = t_trial_end - t_trial_start
@@ -128,7 +129,7 @@ for s in range(0, Ns):
     list_max.append(mat_max)
 
     t_end = datetime.now()
-    print("CCA: Elapsed time for subject: " + str(s + 1) + ": " + str((t_end - t_start)), flush=True)
+    print("CCA: Elapsed time for subject " + str(s + 1) + ": " + str((t_end - t_start)), flush=True)
 
 mat_result = np.concatenate(list_result, axis=1)
 mat_time = np.concatenate(list_time, axis=1)
@@ -151,3 +152,4 @@ if sTag != '':
 
 np.save(os.path.join(dir_results, 'cca_mat_result' + sSec + sNs + sTag), mat_result)
 np.save(os.path.join(dir_results, 'cca_mat_time' + sSec + sNs + sTag), mat_time)
+

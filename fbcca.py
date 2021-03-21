@@ -1,5 +1,16 @@
 from functions import *
 import argparse
+from joblib import Parallel, delayed
+
+
+### functions
+def par_fbcca(w, filterbank, y, Nfilt):
+    rho_k = np.zeros(Nfilt)
+    for nfilter in range(Nfilt):
+        rho_k[nfilter] = apply_cca(filterbank[nfilter], y)
+    rho_k = np.power(rho_k, 2)
+    return np.dot(w, rho_k)
+
 
 ### Parser
 parser = argparse.ArgumentParser(description='Add some integers.')
@@ -69,7 +80,7 @@ mat_Y = np.zeros([Nf, Nh * 2, N_stim])  # [Frequency, Harmonics * 2, Samples]
 for k in range(0, Nf):
     for i in range(1, Nh + 1):
         mat_Y[k, i - 1, :] = np.sin(2 * np.pi * i * vec_freq[k] * vec_t[N_start:N_stop] + vec_phase[k])
-        mat_Y[k, i-1+Nh, :] = np.cos(2 * np.pi * i * vec_freq[k] * vec_t[N_start:N_stop] + vec_phase[k])
+        mat_Y[k, i - 1 + Nh, :] = np.cos(2 * np.pi * i * vec_freq[k] * vec_t[N_start:N_stop] + vec_phase[k])
 
 ### Frequency detection using FBCCA
 list_result = []  # list to store the subject wise results
@@ -110,12 +121,8 @@ for s in range(0, Ns):
 
             vec_rho = np.zeros(Nf)
             # Apply FBCCA
-            for k in range(0, Nf):
-                vec_rho_k = np.zeros(N)
-                for n in range(N):
-                    vec_rho_k[n] = apply_cca(mat_filter[n], mat_Y[k, :, :])
-                vec_rho_k = np.power(vec_rho_k, 2)
-                vec_rho[k] = np.dot(vec_weights, vec_rho_k)
+            vec_rho = Parallel(n_jobs=-1)(
+                delayed(par_fbcca)(vec_weights, mat_filter, mat_Y[k, :, :], N) for k in range(0, Nf))
 
             t_trial_end = datetime.now()
             mat_time[f, b] = t_trial_end - t_trial_start
@@ -142,7 +149,7 @@ for s in range(0, Ns):
     list_rho.append(mat_rho)
     list_max.append(mat_max)
     t_end = datetime.now()
-    print("FBCCA: Elapsed time for subject: " + str(s + 1) + ": " + str((t_end - t_start)), flush=True)
+    print("FBCCA: Elapsed time for subject " + str(s + 1) + ": " + str((t_end - t_start)), flush=True)
 
 mat_result = np.concatenate(list_result, axis=1)
 mat_time = np.concatenate(list_time, axis=1)

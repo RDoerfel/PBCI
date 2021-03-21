@@ -1,5 +1,16 @@
 from functions import *
 import argparse
+from joblib import Parallel, delayed
+
+
+### functions
+def par_ext_fbcca(w, filterbank, y, train, Nfilt):
+    rho_k = np.zeros(Nfilt)
+    for nf in range(Nfilt):
+        rho_k[nf] = apply_ext_fbcca(filterbank[nf], y, train[nf])
+    rho_k = np.power(rho_k, 2)
+    return np.dot(w, rho_k)
+
 
 ### Parser
 parser = argparse.ArgumentParser(description='Add some integers.')
@@ -128,13 +139,8 @@ for s in range(0, Ns):
                                                              phase='zero-double', verbose=False)
 
             # Apply CCA
-            vec_rho = np.zeros(Nf)
-            for k in range(0, Nf):
-                vec_rho_k = np.zeros(N)
-                for n in range(N):
-                    vec_rho_k[n] = apply_ext_fbcca(mat_filter[n], mat_Y[k, :, :], mat_filter_train[n])
-                vec_rho_k = np.power(vec_rho_k, 2)
-                vec_rho[k] = np.dot(vec_weights, vec_rho_k)
+            vec_rho = Parallel(n_jobs=-1)(
+                delayed(par_ext_fbcca)(vec_weights, mat_filter, mat_Y[k, :, :], mat_filter_train, N) for k in range(0, Nf))
 
             t_trial_end = datetime.now()
             mat_time[f, b] = t_trial_end - t_trial_start

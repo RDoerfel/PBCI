@@ -1,5 +1,6 @@
 from functions import *
 import argparse
+from joblib import Parallel, delayed
 
 ### Parser
 parser = argparse.ArgumentParser(description='Add some integers.')
@@ -19,7 +20,6 @@ Ns = args.subjects
 sTag = args.tag
 
 print("Extended CCA: Tag: " + sTag + ", Subjects: " + str(Ns) + ", Data length: " + str(N_sec))
-
 
 ### Set Working Directory
 abspath = os.path.abspath(__file__)
@@ -70,7 +70,7 @@ mat_Y = np.zeros([Nf, Nh * 2, N_stim])  # [Frequency, Harmonics * 2, Samples]
 for k in range(0, Nf):
     for i in range(1, Nh + 1):
         mat_Y[k, i - 1, :] = np.sin(2 * np.pi * i * vec_freq[k] * vec_t[N_start:N_stop] + vec_phase[k])
-        mat_Y[k, i-1+Nh, :] = np.cos(2 * np.pi * i * vec_freq[k] * vec_t[N_start:N_stop] + vec_phase[k])
+        mat_Y[k, i - 1 + Nh, :] = np.cos(2 * np.pi * i * vec_freq[k] * vec_t[N_start:N_stop] + vec_phase[k])
 
 ### Frequency detection using advanced CCA
 list_result = []  # list to store the subject wise results
@@ -113,8 +113,9 @@ for s in range(0, Ns):
 
             # Apply CCA
             vec_rho = np.zeros(Nf)
-            for k in range(0, Nf):
-                vec_rho[k] = apply_ext_cca(mat_filtered[s, b, f, :, :], mat_Y[k, :, :], mat_X_train[k, :, :])
+            vec_rho = Parallel(n_jobs=-1)(
+                delayed(apply_ext_cca)(mat_filtered[s, b, f, :, :], mat_Y[k, :, :], mat_X_train[k, :, :]) for k in
+                range(0, Nf))
 
             t_trial_end = datetime.now()
             mat_time[f, b] = t_trial_end - t_trial_start

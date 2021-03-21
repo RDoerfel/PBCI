@@ -123,7 +123,7 @@ for s in range(0, Ns):
                 mat_filter[n] = mne.filter.filter_data(mat_data, fs, l_freq=f_low + n * bw, h_freq=f_high, method='fir',
                                                        l_trans_bandwidth=2, h_trans_bandwidth=2,
                                                        phase='zero-double', verbose=False)
-                mat_filter_train[n] = mne.filter.filter_data(mat_data, fs, l_freq=f_low + n * bw, h_freq=f_high, method='fir',
+                mat_filter_train[n] = mne.filter.filter_data(mat_X_train[f], fs, l_freq=f_low + n * bw, h_freq=f_high, method='fir',
                                                              l_trans_bandwidth=2, h_trans_bandwidth=2,
                                                              phase='zero-double', verbose=False)
 
@@ -174,14 +174,10 @@ accuracy_drop = acc(mat_bool_thresh)
 print("Extended FBCCA: accuracy: " + str(accuracy_all))
 print("Extended FBCCA: accuracy dropped: " + str(accuracy_drop))
 
-sTag = '_' + str(sTag)
-sSec = '_' + str(N_sec)
-if sTag != "":
-    sNs = '_' + str(Ns)
+sNs = '_s' + str(Ns)
+sSec = '_l' + str(N_sec).replace('.', '_')
+if sTag != '':
+    sTag = '_' + str(sTag)
 
 np.save(os.path.join(dir_results, 'ext_fbcca_mat_result' + sSec + sNs + sTag), mat_result)
 np.save(os.path.join(dir_results, 'ext_fbcca_mat_time' + sSec + sNs + sTag), mat_time)
-np.save(os.path.join(dir_results, 'ext_fbcca_mat_b' + sSec + sNs + sTag), mat_b)
-np.save(os.path.join(dir_results, 'ext_fbcca_mat_b_thresh' + sSec + sNs + sTag), mat_b_thresh)
-np.save(os.path.join(dir_results, 'ext_fbcca_mat_max' + sSec + sNs + sTag), mat_max)
-np.save(os.path.join(dir_results, 'ext_fbcca_mat_rho' + sSec + sNs + sTag), mat_rho)

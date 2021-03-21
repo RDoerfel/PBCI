@@ -1,6 +1,6 @@
-# -*- coding: utf-8 -*-
+# -*- coding: iso-8859-1 -*-
 """
-# Created by Ruben DÃ¶rfel at 08.02.2021
+# Created by Ruben Dörfel at 08.02.2021
 
 Feature: Function
 This File contains functions that are often used. It is to be imported at the beginning of all scripts.
@@ -13,13 +13,13 @@ import seaborn as sns
 import numpy as np
 from sklearn.cross_decomposition import CCA
 from scipy.io import loadmat
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import os
 from datetime import datetime
 import pandas as pd
 import mne
 import sys
-
 
 ### Functions
 def loadData(fpath, fname):
@@ -201,6 +201,7 @@ def apply_ext_fbcca(X, Y, X_Train):
         :n_comp,
         n_comp:])
 
+    # eq 8, Chen 2015,PNAS
     rho = np.sign(rho_1) * rho_1 ** 2 + np.sign(rho_2) * rho_2 ** 2 + np.sign(rho_3) * rho_3 ** 2 + np.sign(
         rho_4) * rho_4 ** 2 + np.sign(rho_5) * rho_5 ** 2
 
@@ -401,6 +402,34 @@ def plot_trial(results):
     set_size(fig, 8, 2.5)
     fig.tight_layout()
     return fig, ax
+
+
+##Style und Co
+def setPgf(bDoPgf):
+    if bDoPgf:
+        mpl.use("pgf")
+        mpl.rcParams.update({
+            "savefig.dpi": 300,
+            "pgf.texsystem": "pdflatex",
+            "font.family": "serif",
+            'text.usetex': True,
+            'pgf.rcfonts': False,
+            "axes.labelsize": 8,  # LaTeX default is 10pt font.
+            "legend.fontsize": 6,  # Make the legend/label fonts a little smaller
+            "xtick.labelsize": 6,
+            "ytick.labelsize": 6,
+            "pgf.preamble": r"\usepackage[utf8x]{inputenc} \usepackage[T1]{fontenc} \usepackage{cmbright}"
+        })
+
+
+def figsize(scale):
+    fig_width_pt = 345.                          # Get this from LaTeX using \the\textwidth
+    inches_per_pt = 1.0/72.27                       # Convert pt to inch
+    golden_mean = (np.sqrt(5.0)-1.0)/2.0            # Aesthetic ratio (you could change this)
+    fig_width = fig_width_pt*inches_per_pt*scale    # width in inches
+    fig_height = fig_width*golden_mean              # height in inches
+    fig_size = [fig_width,fig_height]
+    return fig_size
 
 
 ### Lambdas

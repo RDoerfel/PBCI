@@ -133,5 +133,5 @@ if sTag != '':
 
 np.save(os.path.join(dir_results, 'cca_mat_result' + sSec + sNs + sTag), mat_result)
 np.save(os.path.join(dir_results, 'cca_mat_time' + sSec + sNs + sTag), mat_time)
-np.save(os.path.join(dir_results, 'cca_mat_info'), mat_info)
-np.save(os.path.join(dir_results, 'cca_mat_rho'), mat_rho)
+np.save(os.path.join(dir_results, 'cca_mat_info' + sSec + sNs + sTag), mat_info)
+np.save(os.path.join(dir_results, 'cca_mat_rho' + sSec + sNs + sTag), mat_rho)

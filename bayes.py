@@ -37,7 +37,7 @@ for s in range(0, Ns):
     X_test = matX[mat_info[:, 0] == s]
     y_test = mat_info[mat_info[:, 0] == s, 2]
     clf = MultinomialNB()
-    clr = LogisticRegression(C=100,class_weight='balanced', max_iter=1000, penalty='l2', multi_class='multinomial', solver='newton-cg', tol=1e-4)
+    clr = LogisticRegression(C=100, class_weight='balanced', max_iter=1000, penalty='l2', multi_class='multinomial', solver='newton-cg', tol=1e-4)
     clr.fit(X_train, y_train)
     vec_accuracy[s] = clr.score(X_test, y_test)
 print("LogReg: %0.2f accuracy" % (vec_accuracy.mean()))

@@ -85,10 +85,8 @@ for k in range(0, Nf):
 ### Frequency detection using FBCCA
 list_result = []  # list to store the subject wise results
 list_time = []  # list to store the subject wise results
-list_bool_result = []  # list to store the classification as true/false
-list_bool_thresh = []  # list to store the classification with thresholds
 list_rho = []
-list_max = []
+mat_info = np.zeros([Ns * Nb * Nf, 3])
 
 N = 7  # according to paper the best amount of sub bands for M3
 f_high = 88  # Hz
@@ -99,10 +97,6 @@ num_iter = 0
 
 for s in range(0, Ns):
     mat_ind_max = np.zeros([Nf, Nb])  # index of maximum cca
-    mat_bool = np.zeros([Nf, Nb])
-    mat_bool_thresh = np.zeros([Nf, Nb])
-    mat_rho = np.zeros([Nf, Nb])
-    mat_max = np.zeros([Nf, Nb])
     mat_time = np.zeros([Nf, Nb], dtype='object')  # matrix to store time needed
     t_start = datetime.now()
     for b in range(0, Nb):
@@ -127,43 +121,31 @@ for s in range(0, Ns):
             t_trial_end = datetime.now()
             mat_time[f, b] = t_trial_end - t_trial_start
             mat_ind_max[f, b] = np.argmax(vec_rho)  # get index of maximum -> frequency -> letter
-            mat_bool[f, b] = mat_ind_max[f, b].astype(int) == f  # compare if classification is true
-            mat_bool_thresh[f, b] = mat_ind_max[f, b].astype(int) == f
-            mat_max[f, b] = np.max(np.abs(mat_data))
-            mat_rho[f, b] = np.max(vec_rho)
 
-            # Apply Threshold
-            for data in mat_filter:
-                mat_stand = standardize(data)
-                if np.max(np.abs(mat_stand)) > mat_max[f, b]:
-                    mat_max[f, b] = np.max(np.abs(mat_stand))
-                thresh = 6
-                if np.max(np.abs(mat_stand)) > thresh:
-                    # minus 1 if it is going to be removed
-                    mat_bool_thresh[f, b] = -1
+            t_trial_end = datetime.now()
+            mat_time[f, b] = t_trial_end - t_trial_start
+            mat_ind_max[f, b] = np.argmax(vec_rho)  # get index of maximum -> frequency -> letter
+
+            list_rho.append(vec_rho)
+            mat_info[num_iter, 0] = s
+            mat_info[num_iter, 1] = b
+            mat_info[num_iter, 2] = f
+
+            num_iter = num_iter + 1
 
     list_result.append(mat_ind_max)  # store results per subject
     list_time.append(mat_time)
-    list_bool_result.append(mat_bool)
-    list_bool_thresh.append(mat_bool_thresh)
-    list_rho.append(mat_rho)
-    list_max.append(mat_max)
     t_end = datetime.now()
     print("FBCCA: Elapsed time for subject " + str(s + 1) + ": " + str((t_end - t_start)), flush=True)
 
 mat_result = np.concatenate(list_result, axis=1)
 mat_time = np.concatenate(list_time, axis=1)
-mat_b = np.concatenate(list_bool_result, axis=1)
-mat_b_thresh = np.concatenate(list_bool_thresh, axis=1)
-mat_max = np.concatenate(list_max, axis=1)
 mat_rho = np.concatenate(list_rho, axis=1)
 
 ### analysis
 accuracy_all = accuracy(vec_freq, mat_result)
-accuracy_drop = acc(mat_b_thresh)
 
 print("FBCCA: accuracy: " + str(accuracy_all))
-print("FBCCA: accuracy dropped: " + str(accuracy_drop))
 
 sNs = '_s' + str(Ns)
 sSec = '_l' + str(N_sec).replace('.', '_')
@@ -171,4 +153,5 @@ if sTag != '':
     sTag = '_' + str(sTag)
 np.save(os.path.join(dir_results, 'fbcca_mat_result' + sSec + sNs + sTag), mat_result)
 np.save(os.path.join(dir_results, 'fbcca_mat_time' + sSec + sNs + sTag), mat_time)
-
+np.save(os.path.join(dir_results, 'fbcca_mat_info' + sSec + sNs + sTag), mat_info)
+np.save(os.path.join(dir_results, 'fbcca_mat_rho' + sSec + sNs + sTag), mat_rho)

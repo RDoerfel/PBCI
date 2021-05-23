@@ -80,8 +80,6 @@ mat_info = np.zeros([Ns * Nb * Nf, 3])
 num_iter = 0
 for s in range(0, Ns):
     mat_ind_max = np.zeros([Nf, Nb])  # index of maximum cca
-    mat_rho = np.zeros([Nf, Nb])
-    mat_max = np.zeros([Nf, Nb])
     mat_time = np.zeros([Nf, Nb], dtype='object')  # matrix to store time needed
     t_start = datetime.now()
     for b in range(0, Nb):
@@ -102,7 +100,6 @@ for s in range(0, Ns):
             t_trial_end = datetime.now()
             mat_time[f, b] = t_trial_end - t_trial_start
             mat_ind_max[f, b] = np.argmax(vec_rho)  # get index of maximum -> frequency -> letter
-            mat_rho[f, b] = np.max(vec_rho)
 
             list_rho.append(vec_rho)
             mat_info[num_iter, 0] = s

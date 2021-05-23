@@ -13,6 +13,21 @@ from sklearn.model_selection import StratifiedKFold
 from sklearn.model_selection import GridSearchCV
 from matplotlib.ticker import (MultipleLocator, FormatStrFormatter,
                                AutoMinorLocator)
+
+### functions
+def train_clr(X_train,X_test,y_train,y_test):
+    clr = LogisticRegression(C=100, class_weight='balanced', max_iter=1000, penalty='l2', multi_class='multinomial',
+                             solver='newton-cg', tol=1e-4)
+    clr.fit(X_train, y_train)
+    return clr.predict(X_test)
+
+
+def train_cnb(X_train, X_test, y_train, y_test):
+    clnb = MultinomialNB()
+    clnb.fit(X_train, y_train)
+    return clnb.predict(X_test)
+
+
 ### Set Working Directory
 abspath = os.path.abspath(__file__)
 dirname = os.path.dirname(abspath)
@@ -72,24 +87,28 @@ for i,l in enumerate(vec_length):
     df['Block'].astype(int)
 
     ## predict f
-    l_pred_clr = []
-    l_pred_clnb = []
-    for s in range(0, Ns):
-        X_train = matX[cca_mat_inf[:, 0] != s]
-        y_train = cca_mat_inf[cca_mat_inf[:, 0] != s, 2]
-        X_test = matX[cca_mat_inf[:, 0] == s]
-        y_test = cca_mat_inf[cca_mat_inf[:, 0] == s, 2]
+    # l_pred_clr = []
+    # l_pred_clnb = []
+    # for s in range(0, Ns):
+    #     X_train = matX[cca_mat_inf[:, 0] != s]
+    #     y_train = cca_mat_inf[cca_mat_inf[:, 0] != s, 2]
+    #     X_test = matX[cca_mat_inf[:, 0] == s]
+    #     y_test = cca_mat_inf[cca_mat_inf[:, 0] == s, 2]
+    #
+    #     clnb = MultinomialNB()
+    #     clr = LogisticRegression(C=100, class_weight='balanced', max_iter=1000, penalty='l2', multi_class='multinomial', solver='newton-cg', tol=1e-4)
+    #     clr.fit(X_train, y_train)
+    #     clnb.fit(X_train, y_train)
+    #     l_pred_clr.append(clr.predict(X_test))
+    #     l_pred_clnb.append(clnb.predict(X_test))
+    #     print("Accuracy LR - %.2f, NB - %.2f for length %.2f in subject %i." % (clr.score(X_test,y_test)*100,clnb.score(X_test,y_test)*100,l,s))
+    #
 
-        clnb = MultinomialNB()
-        clr = LogisticRegression(C=100, class_weight='balanced', max_iter=1000, penalty='l2', multi_class='multinomial', solver='newton-cg', tol=1e-4)
-        clr.fit(X_train, y_train)
-        clnb.fit(X_train, y_train)
-        l_pred_clr.append(clr.predict(X_test))
-        l_pred_clnb.append(clnb.predict(X_test))
-        print("Accuracy LR - %.2f, NB - %.2f for length %.2f in subject %i." % (clr.score(X_test,y_test)*100,clnb.score(X_test,y_test)*100,l,s))
+    l_pred_clr = Parallel(n_jobs=-1)(delayed(train_clr)(matX[cca_mat_inf[:, 0] != s], matX[cca_mat_inf[:, 0] == s],cca_mat_inf[cca_mat_inf[:, 0] != s, 2],cca_mat_inf[cca_mat_inf[:, 0] == s, 2]) for s in range(0, Ns))
+    l_pred_cnb = Parallel(n_jobs=-1)(delayed(train_cnb)(matX[cca_mat_inf[:, 0] != s], matX[cca_mat_inf[:, 0] == s],cca_mat_inf[cca_mat_inf[:, 0] != s, 2],cca_mat_inf[cca_mat_inf[:, 0] == s, 2]) for s in range(0, Ns))
 
     df['LR'] = np.concatenate(l_pred_clr).astype(int)
-    df['NB'] = np.concatenate(l_pred_clnb).astype(int)
+    df['NB'] = np.concatenate(l_pred_cnb).astype(int)
 
     df['bCCA'] = df['CCA'] == df['Frequency']
     df['bLR'] = df['LR'] == df['Frequency']
@@ -113,6 +132,7 @@ for i,l in enumerate(vec_length):
     l_df_itr.append(df_itr)
 
     lDf.append(df)
+    print("Length %.2f of %i" % (l, len(vec_length)))
 
 df = pd.concat(lDf)
 df_acc = pd.concat(l_df_acc)
@@ -131,8 +151,8 @@ df_melt_itr = df_melt_itr.rename(columns={'variable': 'Method', 'value': 'ITR'})
 palette = sns.color_palette('colorblind')
 lLabels = ['CCA', 'LR', 'NB']
 
-dict_params = {"estimator": np.mean,
-               "ci": 95,
+dict_params = {"estimator": np.median,
+               "ci": 'sd',
                "err_style": "bars",
                "markers": True,
                "linewidth": 0.8,
@@ -194,3 +214,4 @@ df_acc_gl = df_acc.groupby('Length').mean()
 
 print(df_acc_gl.max())
 print(df_acc_gl.idxmax())
+

@@ -75,10 +75,8 @@ for k in range(0, Nf):
 ### Frequency detection using advanced CCA
 list_result = []  # list to store the subject wise results
 list_time = []  # list to store the time per trial
-list_bool_result = []  # list to store the classification as true/false
-list_bool_thresh = []  # list to store the classification with thresholds
 list_rho = []
-list_max = []
+mat_info = np.zeros([Ns * Nb * Nf, 3])
 
 num_iter = 0
 mat_filtered = np.zeros([Ns, Nb, Nf, 9, N_stim])
@@ -93,10 +91,6 @@ for s in range(0, Ns):
 
 for s in range(0, Ns):
     mat_ind_max = np.zeros([Nf, Nb])  # index of maximum cca
-    mat_bool = np.zeros([Nf, Nb])
-    mat_bool_thresh = np.zeros([Nf, Nb])
-    mat_rho = np.zeros([Nf, Nb])
-    mat_max = np.zeros([Nf, Nb])
     mat_time = np.zeros([Nf, Nb], dtype='object')  # matrix to store time needed
 
     t_start = datetime.now()
@@ -119,41 +113,28 @@ for s in range(0, Ns):
 
             t_trial_end = datetime.now()
             mat_time[f, b] = t_trial_end - t_trial_start
-            mat_rho[f, b] = np.max(vec_rho)
             mat_ind_max[f, b] = np.argmax(vec_rho)  # get index of maximum -> frequency -> letter
-            num_iter = num_iter + 1
 
-            # apply threshold
-            mat_stand = standardize(mat_filt)
-            mat_max[f, b] = np.max(np.abs(mat_stand))
-            thresh = 6
-            if np.max(np.abs(mat_stand)) > thresh:
-                # minus 1 if it is going to be removed
-                mat_bool_thresh[f, b] = -1
+            list_rho.append(vec_rho)
+            mat_info[num_iter, 0] = s
+            mat_info[num_iter, 1] = b
+            mat_info[num_iter, 2] = f
+
+            num_iter = num_iter + 1
 
     list_result.append(mat_ind_max)  # store results per subject
     list_time.append(mat_time)  # store results per subject
-    list_bool_result.append(mat_bool)
-    list_bool_thresh.append(mat_bool_thresh)
-    list_rho.append(mat_rho)
-    list_max.append(mat_max)
-
     t_end = datetime.now()
     print("Extended CCA: Elapsed time for subject: " + str(s + 1) + ": " + str((t_end - t_start)), flush=True)
 
 mat_result = np.concatenate(list_result, axis=1)
 mat_time = np.concatenate(list_time, axis=1)
-mat_b = np.concatenate(list_bool_result, axis=1)
-mat_b_thresh = np.concatenate(list_bool_thresh, axis=1)
-mat_max = np.concatenate(list_max, axis=1)
 mat_rho = np.concatenate(list_rho, axis=1)
 
 ### Analysis
 accuracy_all = accuracy(vec_freq, mat_result)
-accuracy_drop = acc(mat_b_thresh)
 
 print("Extended CCA: accuracy: " + str(accuracy_all))
-print("Extended CCA: accuracy dropped: " + str(accuracy_drop))
 
 sNs = '_s' + str(Ns)
 sSec = '_l' + str(N_sec).replace('.', '_')
@@ -162,3 +143,5 @@ if sTag != '':
 
 np.save(os.path.join(dir_results, 'ext_cca_mat_result' + sSec + sNs + sTag), mat_result)
 np.save(os.path.join(dir_results, 'ext_cca_mat_time' + sSec + sNs + sTag), mat_time)
+np.save(os.path.join(dir_results, 'ext_cca_mat_rho' + sSec + sNs + sTag), mat_rho)
+np.save(os.path.join(dir_results, 'ext_cca_mat_info' + sSec + sNs + sTag), mat_info)

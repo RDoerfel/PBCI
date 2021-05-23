@@ -131,7 +131,6 @@ dict_params = {"estimator": np.mean,
                "ci": 95,
                "err_style": "bars",
                "markers": True,
-               "palette": palette[0:3],
                "linewidth": 0.8,
                "err_kws": {"capsize": 2, "capthick": .8, "lw": .5}}
 

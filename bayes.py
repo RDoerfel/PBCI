@@ -118,6 +118,10 @@ df = pd.concat(lDf)
 df_acc = pd.concat(l_df_acc)
 df_itr = pd.concat(l_df_itr)
 
+df.to_pickle(os.path.join(dir_results, 'df.pkl'))
+df_acc.to_pickle(os.path.join(dir_results, 'df_acc.pkl'))
+df_itr.to_pickle(os.path.join(dir_results, 'df_itr.pkl'))
+
 df_melt_acc = df_acc.melt(['Length'])
 df_melt_itr = df_itr.melt(['Length'])
 df_melt_acc = df_melt_acc.rename(columns={'variable': 'Method', 'value': 'Accuracy'})

@@ -47,7 +47,7 @@ l_df_itr = []
 
 sNs = '_s' + str(Ns)
 sTag = '_ext'
-vec_length = vec_length[10:11]
+
 for i,l in enumerate(vec_length):
     sSec = '_l' + str(l).replace('.', '_')
     fname_cca_res = 'cca_mat_result' + sSec + sNs + sTag + '.npy'

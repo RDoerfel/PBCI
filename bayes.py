@@ -47,7 +47,7 @@ l_df_itr = []
 
 sNs = '_s' + str(Ns)
 sTag = '_ext'
-
+vec_length = vec_length[10:11]
 for i,l in enumerate(vec_length):
     sSec = '_l' + str(l).replace('.', '_')
     fname_cca_res = 'cca_mat_result' + sSec + sNs + sTag + '.npy'
@@ -86,10 +86,10 @@ for i,l in enumerate(vec_length):
         clnb.fit(X_train, y_train)
         l_pred_clr.append(clr.predict(X_test))
         l_pred_clnb.append(clnb.predict(X_test))
-        print("Accuracy LR - %f, NB - %f for length %f in subject %i." % (clr.score(X_test,y_test),clnb.score(X_test,y_test),l,s))
+        print("Accuracy LR - %.2f, NB - %.2f for length %.2f in subject %i." % (clr.score(X_test,y_test)*100,clnb.score(X_test,y_test)*100,l,s))
 
-    df['LR'] = np.concatenate(l_pred_clr)
-    df['NB'] = np.concatenate(l_pred_clnb)
+    df['LR'] = np.concatenate(l_pred_clr).astype(int)
+    df['NB'] = np.concatenate(l_pred_clnb).astype(int)
 
     df['bCCA'] = df['CCA'] == df['Frequency']
     df['bLR'] = df['LR'] == df['Frequency']
@@ -99,8 +99,8 @@ for i,l in enumerate(vec_length):
     df_itr = pd.DataFrame()
 
     df_acc['CCA'] = df.groupby(['Subject']).sum()['bCCA'] / (Nb * Nf) * 100
-    df_acc['LR'] = df.groupby(['Subject']).sum()['LR'] / (Nb * Nf) * 100
-    df_acc['NB'] = df.groupby(['Subject']).sum()['NB'] / (Nb * Nf) * 100
+    df_acc['LR'] = df.groupby(['Subject']).sum()['bLR'] / (Nb * Nf) * 100
+    df_acc['NB'] = df.groupby(['Subject']).sum()['bNB'] / (Nb * Nf) * 100
 
     df_itr['CCA'] = df_acc['CCA'].apply((lambda x: itr(x, l + 0.5)))
     df_itr['LR'] = df_acc['LR'].apply((lambda x: itr(x, l + 0.5)))
@@ -131,7 +131,7 @@ dict_params = {"estimator": np.mean,
                "ci": 95,
                "err_style": "bars",
                "markers": True,
-               "palette": palette[0:4],
+               "palette": palette[0:3],
                "linewidth": 0.8,
                "err_kws": {"capsize": 2, "capthick": .8, "lw": .5}}
 

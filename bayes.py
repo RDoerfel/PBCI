@@ -17,7 +17,7 @@ from matplotlib.ticker import (MultipleLocator, FormatStrFormatter,
 ### Parser
 parser = argparse.ArgumentParser(description='Add some integers.')
 
-parser.add_argument('--method', action='store', default='ref',
+parser.add_argument('--method', action='store', default='cca',
                     help='Tag to add to the files.')
 parser.add_argument('--tag', action='store', default='ref',
                     help='Tag to add to the files.')

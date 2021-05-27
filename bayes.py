@@ -14,19 +14,26 @@ from sklearn.model_selection import GridSearchCV
 from matplotlib.ticker import (MultipleLocator, FormatStrFormatter,
                                AutoMinorLocator)
 
+### Parser
+parser = argparse.ArgumentParser(description='Add some integers.')
+
+parser.add_argument('--method', action='store', default='ref',
+                    help='Tag to add to the files.')
+parser.add_argument('--tag', action='store', default='ref',
+                    help='Tag to add to the files.')
+
+args = parser.parse_args()
+sTag = args.tag
+sMethod = args.method
+
+print("Classification: " + sMethod)
+
 ### functions
 def train_clr(X_train,X_test,y_train,y_test):
     clr = LogisticRegression(C=100, class_weight='balanced', max_iter=1000, penalty='l2', multi_class='multinomial',
                              solver='newton-cg', tol=1e-4)
     clr.fit(X_train, y_train)
     return clr.predict(X_test)
-
-
-def train_cnb(X_train, X_test, y_train, y_test):
-    clnb = MultinomialNB()
-    clnb.fit(X_train, y_train)
-    return clnb.predict(X_test)
-
 
 ### Set Working Directory
 abspath = os.path.abspath(__file__)
@@ -39,10 +46,6 @@ dir_results = 'results'
 
 bPgf = False
 ### Load data
-
-matX = np.load(os.path.join(dir_results, 'cca_mat_rho.npy'))
-matX = matX.transpose()
-mat_info = np.load(os.path.join(dir_results, 'cca_mat_info.npy'))
 
 Ns = 35
 Nf = 40
@@ -62,68 +65,46 @@ l_df_itr = []
 
 sNs = '_s' + str(Ns)
 sTag = '_ext'
-
+vec_length = vec_length[5:7]
 for i,l in enumerate(vec_length):
     sSec = '_l' + str(l).replace('.', '_')
-    fname_cca_res = 'cca_mat_result' + sSec + sNs + sTag + '.npy'
-    fname_cca_rho = 'cca_mat_rho' + sSec + sNs + sTag + '.npy'
-    fname_cca_inf = 'cca_mat_info' + sSec + sNs + sTag + '.npy'
 
-    cca_mat_result = np.load(os.path.join(dir_results, fname_cca_res))
-    matX = np.load(os.path.join(dir_results, fname_cca_rho)).transpose()
-    cca_mat_inf = np.load(os.path.join(dir_results, fname_cca_inf))
+    fRho = sMethod + '_mat_rho' + sSec + sNs + sTag + '.npy'
+    fInfo = sMethod + '_mat_info' + sSec + sNs + sTag + '.npy'
+    fRes = sMethod + '_mat_result' + sSec + sNs + sTag + '.npy'
+
+    mat_result = np.load(os.path.join(dir_results, fRes))
+    mat_X = np.load(os.path.join(dir_results, fRho)).transpose()
+    mat_info = np.load(os.path.join(dir_results, fInfo))
 
     list_col_names = ['Frequency', 'Subject', 'Block', 'Length']
     df = pd.DataFrame(columns=list_col_names)
 
-    df['CCA'] = cca_mat_result.astype(int).flatten('F')
+    df[sMethod] = mat_result.astype(int).flatten('F')
 
     df['Length'] = l
-    df['Subject'] = cca_mat_inf[:, 0]
-    df['Block'] = cca_mat_inf[:, 1]
-    df['Frequency'] = cca_mat_inf[:, 2]
+    df['Subject'] = mat_info[:, 0]
+    df['Block'] = mat_info[:, 1]
+    df['Frequency'] = mat_info[:, 2]
 
     df['Subject'].astype(int)
     df['Block'].astype(int)
 
-    ## predict f
-    # l_pred_clr = []
-    # l_pred_clnb = []
-    # for s in range(0, Ns):
-    #     X_train = matX[cca_mat_inf[:, 0] != s]
-    #     y_train = cca_mat_inf[cca_mat_inf[:, 0] != s, 2]
-    #     X_test = matX[cca_mat_inf[:, 0] == s]
-    #     y_test = cca_mat_inf[cca_mat_inf[:, 0] == s, 2]
-    #
-    #     clnb = MultinomialNB()
-    #     clr = LogisticRegression(C=100, class_weight='balanced', max_iter=1000, penalty='l2', multi_class='multinomial', solver='newton-cg', tol=1e-4)
-    #     clr.fit(X_train, y_train)
-    #     clnb.fit(X_train, y_train)
-    #     l_pred_clr.append(clr.predict(X_test))
-    #     l_pred_clnb.append(clnb.predict(X_test))
-    #     print("Accuracy LR - %.2f, NB - %.2f for length %.2f in subject %i." % (clr.score(X_test,y_test)*100,clnb.score(X_test,y_test)*100,l,s))
-    #
-
-    l_pred_clr = Parallel(n_jobs=-1)(delayed(train_clr)(matX[cca_mat_inf[:, 0] != s], matX[cca_mat_inf[:, 0] == s],cca_mat_inf[cca_mat_inf[:, 0] != s, 2],cca_mat_inf[cca_mat_inf[:, 0] == s, 2]) for s in range(0, Ns))
-    l_pred_cnb = Parallel(n_jobs=-1)(delayed(train_cnb)(matX[cca_mat_inf[:, 0] != s], matX[cca_mat_inf[:, 0] == s],cca_mat_inf[cca_mat_inf[:, 0] != s, 2],cca_mat_inf[cca_mat_inf[:, 0] == s, 2]) for s in range(0, Ns))
+    l_pred_clr = Parallel(n_jobs=-1)(delayed(train_clr)(mat_X[mat_info[:, 0] != s], mat_X[mat_info[:, 0] == s],mat_info[mat_info[:, 0] != s, 2],mat_info[mat_info[:, 0] == s, 2]) for s in range(0, Ns))
 
     df['LR'] = np.concatenate(l_pred_clr).astype(int)
-    df['NB'] = np.concatenate(l_pred_cnb).astype(int)
 
-    df['bCCA'] = df['CCA'] == df['Frequency']
+    df['b' + sMethod] = df[sMethod] == df['Frequency']
     df['bLR'] = df['LR'] == df['Frequency']
-    df['bNB'] = df['NB'] == df['Frequency']
 
     df_acc = pd.DataFrame()
     df_itr = pd.DataFrame()
 
-    df_acc['CCA'] = df.groupby(['Subject']).sum()['bCCA'] / (Nb * Nf) * 100
+    df_acc[sMethod] = df.groupby(['Subject']).sum()['b'+sMethod] / (Nb * Nf) * 100
     df_acc['LR'] = df.groupby(['Subject']).sum()['bLR'] / (Nb * Nf) * 100
-    df_acc['NB'] = df.groupby(['Subject']).sum()['bNB'] / (Nb * Nf) * 100
 
-    df_itr['CCA'] = df_acc['CCA'].apply((lambda x: itr(x, l + 0.5)))
+    df_itr[sMethod] = df_acc[sMethod].apply((lambda x: itr(x, l + 0.5)))
     df_itr['LR'] = df_acc['LR'].apply((lambda x: itr(x, l + 0.5)))
-    df_itr['NB'] = df_acc['NB'].apply((lambda x: itr(x, l + 0.5)))
 
     df_acc['Length'] = l
     df_itr['Length'] = l
@@ -138,10 +119,6 @@ df = pd.concat(lDf)
 df_acc = pd.concat(l_df_acc)
 df_itr = pd.concat(l_df_itr)
 
-df.to_pickle(os.path.join(dir_results, 'df.pkl'))
-df_acc.to_pickle(os.path.join(dir_results, 'df_acc.pkl'))
-df_itr.to_pickle(os.path.join(dir_results, 'df_itr.pkl'))
-
 df_melt_acc = df_acc.melt(['Length'])
 df_melt_itr = df_itr.melt(['Length'])
 df_melt_acc = df_melt_acc.rename(columns={'variable': 'Method', 'value': 'Accuracy'})
@@ -149,7 +126,7 @@ df_melt_itr = df_melt_itr.rename(columns={'variable': 'Method', 'value': 'ITR'})
 
 ## Plots
 palette = sns.color_palette('colorblind')
-lLabels = ['CCA', 'LR', 'NB']
+lLabels = [sMethod, 'LR']
 
 dict_params = {"estimator": np.median,
                "ci": 'sd',
@@ -214,4 +191,3 @@ df_acc_gl = df_acc.groupby('Length').mean()
 
 print(df_acc_gl.max())
 print(df_acc_gl.idxmax())
-

@@ -1,3 +1,5 @@
+import numpy as np
+
 from functions import *
 import argparse
 from joblib import Parallel, delayed
@@ -117,6 +119,7 @@ for s in range(0, Ns):
             # Apply FBCCA
             vec_rho = Parallel(n_jobs=-1)(
                 delayed(par_fbcca)(vec_weights, mat_filter, mat_Y[k, :, :], N) for k in range(0, Nf))
+            vec_rho = np.asarray(vec_rho)
 
             t_trial_end = datetime.now()
             mat_time[f, b] = t_trial_end - t_trial_start
@@ -140,7 +143,7 @@ for s in range(0, Ns):
 
 mat_result = np.concatenate(list_result, axis=1)
 mat_time = np.concatenate(list_time, axis=1)
-mat_rho = np.concatenate(list_rho, axis=1)
+mat_rho = np.vstack(list_rho)
 
 ### analysis
 accuracy_all = accuracy(vec_freq, mat_result)

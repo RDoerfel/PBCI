@@ -17,11 +17,11 @@ from sklearn.svm import LinearSVC
 ### Parser
 parser = argparse.ArgumentParser(description='Add some integers.')
 
-parser.add_argument('--method', action='store', default='ref',
+parser.add_argument('--method', action='store', default='cca',
                     help='Tag to add to the files.')
-parser.add_argument('--tag', action='store', default='ref',
+parser.add_argument('--tag', action='store', default='ext',
                     help='Tag to add to the files.')
-parser.add_argument('--length', action='store', type=float, default=5,
+parser.add_argument('--length', action='store', type=float, default=5.0,
                     help='Length of data to take into account (0,5].')
 
 args = parser.parse_args()

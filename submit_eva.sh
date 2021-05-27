@@ -43,7 +43,7 @@ source pbci/bin/activate
 ##################################################################
 # Execute your own code by replacing the sanity check code below #
 ##################################################################
-python3 run bayes.py --method cca
-python3 run bayes.py --method fbcca
-python3 run bayes.py --method ext_cca
-python3 run bayes.py --method ext_fbcca
+python3 bayes.py --method cca
+python3 bayes.py --method fbcca
+python3 bayes.py --method ext_cca
+python3 bayes.py --method ext_fbcca

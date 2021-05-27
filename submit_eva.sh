@@ -11,7 +11,7 @@
 ### -- Select the resources: 1 gpu in exclusive process mode --
 #BSUB -gpu "num=1:mode=exclusive_process"
 ### -- set walltime limit: hh:mm --  maximum 24 hours for GPU-queues right now
-#BSUB -W 1:00
+#BSUB -W 4:00
 ### -- request 5GB of memory
 #BSUB -R "rusage[mem=10GB]"
 ### -- set the email address --
@@ -43,4 +43,7 @@ source pbci/bin/activate
 ##################################################################
 # Execute your own code by replacing the sanity check code below #
 ##################################################################
-python3 bayes.py
+python3 run bayes.py --method cca
+python3 run bayes.py --method fbcca
+python3 run bayes.py --method ext_cca
+python3 run bayes.py --method ext_fbcca

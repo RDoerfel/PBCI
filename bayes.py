@@ -65,7 +65,7 @@ l_df_itr = []
 
 sNs = '_s' + str(Ns)
 sTag = '_ext'
-vec_length = vec_length[5:7]
+
 for i,l in enumerate(vec_length):
     sSec = '_l' + str(l).replace('.', '_')
 
@@ -154,8 +154,8 @@ ax1.legend(handles=handles, labels=labels)
 set_style(fig1, ax1)
 set_size(fig1, 2.8, 2)
 
-fig1.savefig(os.path.join(dir_figures, 'accuracy_class.pdf'), dpi=300)
-fig1.savefig(os.path.join(dir_figures, 'accuracy_class.png'), dpi=300)
+fig1.savefig(os.path.join(dir_figures, 'accuracy_class_' + sMethod + '.pdf'), dpi=300)
+fig1.savefig(os.path.join(dir_figures, 'accuracy_class' + sMethod + '.png'), dpi=300)
 # if bPgf:
 #     fig1.savefig(os.path.join(dir_figures, 'accuracy_all.pgf'))
 #     plt.close(fig1)
@@ -176,8 +176,8 @@ ax2.set_xlim([0, 5])
 set_style(fig2, ax2)
 set_size(fig2, 2.8, 2)
 
-fig2.savefig(os.path.join(dir_figures, 'itr_class.pdf'), dpi=300)
-fig2.savefig(os.path.join(dir_figures, 'itr_class.png'), dpi=300)
+fig2.savefig(os.path.join(dir_figures, 'itr_class' + sMethod + '.pdf'), dpi=300)
+fig2.savefig(os.path.join(dir_figures, 'itr_class' + sMethod + '.png'), dpi=300)
 
 ### Evaluation
 df_itr_gl = pd.DataFrame()

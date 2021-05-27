@@ -4,7 +4,7 @@
 ### –- specify queue: gpuv100, gputitanxpascal, gpuk40, gpum2050 --
 #BSUB -q gpuv100
 ### -- set the job Name --
-#BSUB -J cca
+#BSUB -J eval_cl
 ### -- ask for number of cores (default: 1) --
 #BSUB -n 8
 #BSUB -R "span[hosts=1]"

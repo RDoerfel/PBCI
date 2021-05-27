@@ -138,6 +138,7 @@ for s in range(0, Ns):
             vec_rho = Parallel(n_jobs=-1)(
                 delayed(par_ext_fbcca)(vec_weights, mat_filter, mat_Y[k, :, :], mat_filter_train, N) for k in
                 range(0, Nf))
+            vec_rho = np.asarray(vec_rho)
 
             t_trial_end = datetime.now()
             mat_time[f, b] = t_trial_end - t_trial_start
@@ -158,7 +159,7 @@ for s in range(0, Ns):
 
 mat_result = np.concatenate(list_result, axis=1)
 mat_time = np.concatenate(list_time, axis=1)
-mat_rho = np.concatenate(list_rho, axis=1)
+mat_rho = np.vstack(list_rho)
 
 ### Analysis
 accuracy_all = accuracy(vec_freq, mat_result)

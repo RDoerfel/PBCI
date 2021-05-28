@@ -31,7 +31,7 @@ print("Classification: " + sMethod)
 
 ### functions
 def train_clr(X_train, X_test, y_train, y_test):
-    clr = LogisticRegression(C=10, class_weight='balanced', max_iter=1000, penalty='l2', multi_class='multinomial',
+    clr = LogisticRegression(C=100, class_weight='balanced', max_iter=1000, penalty='l2', multi_class='multinomial',
                              solver='newton-cg', tol=1e-4)
     clr.fit(X_train, y_train)
     return clr.predict(X_test)

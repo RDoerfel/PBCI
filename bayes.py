@@ -28,12 +28,14 @@ sMethod = args.method
 
 print("Classification: " + sMethod)
 
+
 ### functions
-def train_clr(X_train,X_test,y_train,y_test):
+def train_clr(X_train, X_test, y_train, y_test):
     clr = LogisticRegression(C=10, class_weight='balanced', max_iter=1000, penalty='l2', multi_class='multinomial',
                              solver='newton-cg', tol=1e-4)
     clr.fit(X_train, y_train)
     return clr.predict(X_test)
+
 
 ### Set Working Directory
 abspath = os.path.abspath(__file__)
@@ -66,7 +68,7 @@ l_df_itr = []
 sNs = '_s' + str(Ns)
 sTag = '_ext'
 
-for i,l in enumerate(vec_length):
+for i, l in enumerate(vec_length):
     sSec = '_l' + str(l).replace('.', '_')
 
     fRho = sMethod + '_mat_rho' + sSec + sNs + sTag + '.npy'
@@ -74,8 +76,12 @@ for i,l in enumerate(vec_length):
     fRes = sMethod + '_mat_result' + sSec + sNs + sTag + '.npy'
 
     mat_result = np.load(os.path.join(dir_results, fRes))
-    mat_X = np.load(os.path.join(dir_results, fRho)).transpose()
     mat_info = np.load(os.path.join(dir_results, fInfo))
+
+    if sMethod == 'fbcca' or sMethod == 'ext_fbcca':
+        mat_X = np.load(os.path.join(dir_results, fRho))
+    else:
+        mat_X = np.load(os.path.join(dir_results, fRho)).transpose()
 
     list_col_names = ['Frequency', 'Subject', 'Block', 'Length']
     df = pd.DataFrame(columns=list_col_names)
@@ -90,7 +96,9 @@ for i,l in enumerate(vec_length):
     df['Subject'].astype(int)
     df['Block'].astype(int)
 
-    l_pred_clr = Parallel(n_jobs=-1)(delayed(train_clr)(mat_X[mat_info[:, 0] != s], mat_X[mat_info[:, 0] == s],mat_info[mat_info[:, 0] != s, 2],mat_info[mat_info[:, 0] == s, 2]) for s in range(0, Ns))
+    l_pred_clr = Parallel(n_jobs=-1)(
+        delayed(train_clr)(mat_X[mat_info[:, 0] != s], mat_X[mat_info[:, 0] == s], mat_info[mat_info[:, 0] != s, 2],
+                           mat_info[mat_info[:, 0] == s, 2]) for s in range(0, Ns))
 
     df['LR'] = np.concatenate(l_pred_clr).astype(int)
 
@@ -100,7 +108,7 @@ for i,l in enumerate(vec_length):
     df_acc = pd.DataFrame()
     df_itr = pd.DataFrame()
 
-    df_acc[sMethod] = df.groupby(['Subject']).sum()['b'+sMethod] / (Nb * Nf) * 100
+    df_acc[sMethod] = df.groupby(['Subject']).sum()['b' + sMethod] / (Nb * Nf) * 100
     df_acc['LR'] = df.groupby(['Subject']).sum()['bLR'] / (Nb * Nf) * 100
 
     df_itr[sMethod] = df_acc[sMethod].apply((lambda x: itr(x, l + 0.5)))
